@@ -64,10 +64,51 @@ packages/engine     Connectivity, audit, IP and trace logic
 | `?` / `F1` | Shortcut map |
 | Double-click a site | Step inside it |
 
+## Deploying to Vercel
+
+The repo ships with a root [`vercel.json`](./vercel.json) that builds the
+workspace and serves the Vite output:
+
+| Setting | Value |
+| --- | --- |
+| Install command | `npm ci` |
+| Build command | `npm run build` |
+| Output directory | `apps/web/dist` |
+| Framework | Vite |
+| Node.js | 22 (`.nvmrc`) |
+
+### Option 1 — Git integration (recommended)
+
+1. Push the repository to GitHub (already at `mb91104/Drawnet`).
+2. In Vercel, choose **Add New → Project** and import the repository.
+3. Leave **Root Directory** at the repository root. Vercel reads
+   `vercel.json`, so the build and output settings are already correct.
+4. Click **Deploy**. Every push to the production branch redeploys; other
+   branches get preview URLs.
+
+No environment variables are required.
+
+### Option 2 — Vercel CLI
+
+```bash
+npm i -g vercel
+vercel          # preview deployment
+vercel --prod   # production deployment
+```
+
+Run these from the repository root so the root `vercel.json` is used.
+
+### Notes
+
+- `apps/web/dist` is generated at build time and is git-ignored.
+- The app is fully static; there are no serverless functions, databases, or
+  secrets. User projects live in the visitor's own browser.
+- If you instead set the Vercel **Root Directory** to `apps/web`, override the
+  install command with `cd ../.. && npm ci`, the build command with
+  `cd ../.. && npm run build`, and the output directory with `dist`.
+
 ## Notes
 
 - All data stays in your browser; there is no server or account.
 - The viewport is a flat schematic with 3D-styled presentation, not a true
   perspective renderer.
-- `npm run build` may still surface pre-existing strict-mode type errors in
-  `packages/engine`; the client itself bundles cleanly with `npx vite build`.

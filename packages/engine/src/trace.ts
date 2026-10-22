@@ -1,7 +1,6 @@
 import {
   sceneOfNode,
   type DeviceNode,
-  type NetNode,
   type Port,
   type Project,
   type Scene,
@@ -14,7 +13,6 @@ import {
   networkOf,
   normalizeIp,
   normalizeMask,
-  sameSubnet,
 } from "./ip";
 import {
   broadcastDomain,
@@ -105,7 +103,7 @@ function maskOf(port: Port): string {
   return normalizeMask(port.mask) ?? DEFAULT_MASK;
 }
 
-function pickLinkedPort(project: Project, scene: Scene, node: DeviceNode): Port | undefined {
+function pickLinkedPort(scene: Scene, node: DeviceNode): Port | undefined {
   const linked = node.interfaces.find((port) => findLinkAt(scene, { nodeId: node.id, portId: port.id }));
   return linked ?? node.interfaces[0];
 }
@@ -286,11 +284,16 @@ export function traceConnectivity(project: Project, request: TraceRequest): Trac
   const sourcePort =
     (request.source.portId
       ? sourceNode.interfaces.find((port) => port.id === request.source.portId)
-      : undefined) ?? pickLinkedPort(project, sourceScene, sourceNode);
+      : undefined) ?? pickLinkedPort(sourceScene, sourceNode);
 
   if (!sourcePort) {
     return failedTrace("no-source-port", `${sourceNode.name} has no interfaces.`, "Add an interface or pick another source.");
   }
+
+  // Keep narrowed references for the helper closures below.
+  const sourceSceneRef = sourceScene;
+  const sourceNodeRef = sourceNode;
+  const sourcePortRef = sourcePort;
 
   nodeIds.add(sourceNode.id);
   const sourceLoc: PortLoc = { sceneId: sourceScene.id, nodeId: sourceNode.id, portId: sourcePort.id };
@@ -382,12 +385,13 @@ export function traceConnectivity(project: Project, request: TraceRequest): Trac
     if (!dest) {
       return failedTrace("missing-destination", "The destination device does not exist.", "Pick another destination.");
     }
+    const requestedPortId = request.destination.portId;
     const port =
-      (request.destination.portId
-        ? dest.node.interfaces.find((candidate) => candidate.id === request.destination.portId)
+      (requestedPortId
+        ? dest.node.interfaces.find((candidate) => candidate.id === requestedPortId)
         : undefined) ??
       firstIpPort(dest.node) ??
-      pickLinkedPort(project, dest.scene, dest.node);
+      pickLinkedPort(dest.scene, dest.node);
     if (!port) {
       return failedTrace("bad-destination", `${dest.node.name} has no interfaces.`, "Pick another destination.");
     }
@@ -682,12 +686,12 @@ export function traceConnectivity(project: Project, request: TraceRequest): Trac
     return {
       ok: true,
       source: {
-        nodeId: sourceNode.id,
-        name: sourceNode.name,
-        sceneId: sourceScene.id,
+        nodeId: sourceNodeRef.id,
+        name: sourceNodeRef.name,
+        sceneId: sourceSceneRef.id,
         ip: sourceIp ?? "",
         mask: sourceMask,
-        portId: sourcePort.id,
+        portId: sourcePortRef.id,
       },
       destination,
       steps,
@@ -722,12 +726,12 @@ export function traceConnectivity(project: Project, request: TraceRequest): Trac
     return {
       ok: false,
       source: {
-        nodeId: sourceNode.id,
-        name: sourceNode.name,
-        sceneId: sourceScene.id,
+        nodeId: sourceNodeRef.id,
+        name: sourceNodeRef.name,
+        sceneId: sourceSceneRef.id,
         ip: sourceIp ?? "",
         mask: sourceMask,
-        portId: sourcePort.id,
+        portId: sourcePortRef.id,
       },
       destination,
       steps,

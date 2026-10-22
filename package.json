@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "Drawnet — a two-level (macro/micro) network simulator and builder.",
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"

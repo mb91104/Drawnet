@@ -103,7 +103,7 @@ export function isEndDevice(node: NetNode): boolean {
   return node.kind === "device" && !isLayer2(node) && !isRouterLike(node);
 }
 
-export function boundaryTarget(project: Project, sceneId: string, node: NetNode, portId: string): PortLoc | null {
+export function boundaryTarget(project: Project, node: NetNode, portId: string): PortLoc | null {
   if (node.kind !== "site") return null;
   const mapped = node.boundaryLinks[portId];
   if (!mapped || !node.childSceneId) return null;
@@ -111,7 +111,7 @@ export function boundaryTarget(project: Project, sceneId: string, node: NetNode,
   return { sceneId: node.childSceneId, nodeId: mapped.nodeId, portId: mapped.portId };
 }
 
-function wirelessBlock(project: Project, a: LocatedPort, b: LocatedPort, link: Link): DomainBlock | null {
+function wirelessBlock(a: LocatedPort, b: LocatedPort, link: Link): DomainBlock | null {
   const apSide = a.node.kind === "device" && a.node.modelId === "ap" ? a : b.node.kind === "device" && b.node.modelId === "ap" ? b : null;
   const clientSide = apSide === a ? b : a;
 
@@ -126,7 +126,11 @@ function wirelessBlock(project: Project, a: LocatedPort, b: LocatedPort, link: L
     };
   }
 
-  if (clientSide.node.kind !== "device" || clientSide.node.modelId === "ap") {
+  if (
+    apSide.node.kind !== "device" ||
+    clientSide.node.kind !== "device" ||
+    clientSide.node.modelId === "ap"
+  ) {
     return {
       code: "wireless-association",
       message: "Two access points cannot be joined by a client association.",
@@ -215,7 +219,6 @@ export function broadcastDomain(project: Project, start: PortLoc): BroadcastDoma
     }
 
     if (located.node.kind === "site") {
-      const scene = project.scenes[current.sceneId];
       const childId = located.node.childSceneId;
       if (childId && !project.scenes[childId]) {
         blocks.push({
@@ -226,7 +229,7 @@ export function broadcastDomain(project: Project, start: PortLoc): BroadcastDoma
           nodeIds: [current.nodeId],
         });
       }
-      const target = boundaryTarget(project, current.sceneId, located.node, current.portId);
+      const target = boundaryTarget(project, located.node, current.portId);
       if (target) {
         const targetKey = locKey(target);
         if (!parents.has(targetKey)) {
@@ -315,7 +318,7 @@ export function broadcastDomain(project: Project, start: PortLoc): BroadcastDoma
     }
 
     if (medium === "wireless") {
-      const block = wirelessBlock(project, located, farLocated, link);
+      const block = wirelessBlock(located, farLocated, link);
       if (block) {
         blocks.push(block);
         continue;
