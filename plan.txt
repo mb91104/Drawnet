@@ -1,0 +1,4 @@
+Ok so i have this idea, we need to build a Network Simulator , kind of like Cisco packet tracer ,It should simulate a LAN ,WAN,MAN 
+builder. Also network devices building and creation. Users should be able to create , troubleshoot and maintain their own networks. 
+It is a basic drag and drop canvas .With Macro building and Micro Building.Macro Building is building wide network systems for a city 
+or neighbourhood.Micro building is the deeper part with wires,switches,routers,NAP, Mobile and Computer Devices

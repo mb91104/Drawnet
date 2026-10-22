@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@drawnet/schema": ["../../packages/schema/src/index.ts"],
+      "@drawnet/models": ["../../packages/models/src/index.ts"],
+      "@drawnet/engine": ["../../packages/engine/src/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

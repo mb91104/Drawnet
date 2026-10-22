@@ -1,0 +1,20 @@
+{
+  "name": "drawnet",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Drawnet — a two-level (macro/micro) network simulator and builder.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @drawnet/web",
+    "build": "npm run build --workspace @drawnet/web",
+    "preview": "npm run preview --workspace @drawnet/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
